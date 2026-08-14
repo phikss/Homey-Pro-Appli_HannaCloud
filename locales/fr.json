@@ -1,5 +1,10 @@
 {
   "settings": {
-    "poll_interval": "Intervalle (minutes)"
+    "poll_interval": "Intervalle (minutes)",
+    "subtitle": "Entrez vos identifiants HannaCloud. Ils seront utilisés par tous les contrôleurs ajoutés.",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "test": "Tester",
+    "save": "Enregistrer"
   }
 }
