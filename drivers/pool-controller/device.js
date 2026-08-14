@@ -14,7 +14,6 @@ class PoolControllerDevice extends Homey.Device {
     this._client = new HannaCloudClient();
     this._pollTimer = null;
 
-    // Premier relevé légèrement différé pour laisser l'app finir son démarrage
     this.homey.setTimeout(() => this._poll(), STARTUP_DELAY_MS);
     this._startPolling();
   }
@@ -27,30 +26,24 @@ class PoolControllerDevice extends Homey.Device {
     this._stopPolling();
   }
 
-  async onSettings({ newSettings, changedKeys }) {
-    if (changedKeys.includes('username') || changedKeys.includes('password')) {
-      await this.setStoreValue('username', newSettings.username);
-      await this.setStoreValue('password', newSettings.password);
-      this._client = new HannaCloudClient();
-    }
+  async onSettings({ changedKeys }) {
     if (changedKeys.includes('poll_interval')) {
       this._stopPolling();
       this._startPolling();
+      this.homey.setTimeout(() => this._poll(), 500);
     }
-    // Relève immédiatement avec les nouveaux réglages
-    this.homey.setTimeout(() => this._poll(), 500);
   }
 
-  // ─── Authentification ───────────────────────────────────────────────────────
+  // ─── Authentification (identifiants centralisés au niveau app) ──────────────
 
   async _authenticate() {
-    const { username, password } = this.getStore();
-    if (!username || !password) {
-      await this.setUnavailable('Identifiants manquants. Supprimez puis ré-ajoutez l\'appareil.');
-      return false;
-    }
     try {
-      await this._client.authenticate(username, password);
+      const { email, password } = this.homey.app.getCredentials();
+      if (!email || !password) {
+        await this.setUnavailable('Identifiants non configurés. Ouvrez les réglages de l\'application.');
+        return false;
+      }
+      await this._client.authenticate(email, password);
       return true;
     } catch (err) {
       this.error('Authentification échouée:', err.message);
@@ -59,7 +52,7 @@ class PoolControllerDevice extends Homey.Device {
     }
   }
 
-  // ─── Polling ──────────────────────────────────────────────────────────────────
+  // ─── Polling ────────────────────────────────────────────────────────────────
 
   _pollIntervalMs() {
     const minutes = Math.max(MIN_POLL_MINUTES, this.getSetting('poll_interval') || DEFAULT_POLL_MINUTES);
@@ -80,7 +73,6 @@ class PoolControllerDevice extends Homey.Device {
   }
 
   async _poll() {
-    // Le token n'est rafraîchi que lorsqu'un relevé est nécessaire
     if (!this._client.isAuthenticated()) {
       if (!(await this._authenticate())) return;
     }
@@ -91,7 +83,6 @@ class PoolControllerDevice extends Homey.Device {
       await this.setAvailable();
     } catch (err) {
       if (err.message === 'TOKEN_EXPIRED' || err.message === 'NOT_AUTHENTICATED') {
-        // Token invalidé côté serveur : on retente une authentification immédiate
         if (await this._authenticate()) {
           try {
             const m = await this._client.getLastReading(this.getData().id);
