@@ -24,15 +24,15 @@
     "xlarge": "./assets/images/xlarge.png"
   },
   "author": {
-    "name": "Phikss",
+    "name": "Homey User",
     "email": "user@example.com"
   },
   "homepage": "https://www.hannacloud.com",
   "support": "mailto:user@example.com",
   "bugs": {
-    "url": "https://github.com/fx-dot51/Homey-Pro-Appli_HannaCloud/issues"
+    "url": "https://github.com/user/com.hannacloud.pool/issues"
   },
-  "source": "https://github.com/fx-dot51/Homey-Pro-Appli_HannaCloud/issues",
+  "source": "https://github.com/user/com.hannacloud.pool",
   "drivers": [
     {
       "id": "pool-controller",
@@ -79,24 +79,6 @@
         }
       },
       "pair": [
-        {
-          "id": "login_credentials",
-          "template": "login_credentials",
-          "options": {
-            "usernameLabel": {
-              "en": "Email address",
-              "fr": "Adresse e-mail"
-            },
-            "usernamePlaceholder": {
-              "en": "your@email.com",
-              "fr": "votre@email.com"
-            },
-            "passwordLabel": {
-              "en": "Password",
-              "fr": "Mot de passe"
-            }
-          }
-        },
         {
           "id": "list_devices",
           "template": "list_devices",
@@ -292,5 +274,11 @@
     ]
   },
   "brandColor": "#0077B6",
-  "icon": "./assets/icon.svg"
+  "icon": "./assets/icon.svg",
+  "api": {
+    "testLogin": {
+      "method": "POST",
+      "path": "/test_login"
+    }
+  }
 }
