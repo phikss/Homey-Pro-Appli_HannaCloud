@@ -1,5 +1,10 @@
 {
   "settings": {
-    "poll_interval": "Poll interval (minutes)"
+    "poll_interval": "Poll interval (minutes)",
+    "subtitle": "Enter your HannaCloud credentials. They will be used by every controller you add.",
+    "email": "Email address",
+    "password": "Password",
+    "test": "Test",
+    "save": "Save"
   }
 }
