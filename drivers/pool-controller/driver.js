@@ -1,7 +1,6 @@
 'use strict';
 
 const Homey = require('homey');
-const HannaCloudClient = require('../../lib/HannaCloudClient');
 
 class PoolControllerDriver extends Homey.Driver {
 
@@ -10,18 +9,16 @@ class PoolControllerDriver extends Homey.Driver {
   }
 
   async onPair(session) {
-    let client = null;
-    let credentials = null;
-
-    session.setHandler('login', async ({ username, password }) => {
-      client = new HannaCloudClient();
-      await client.authenticate(username, password); // lève une erreur lisible si échec
-      credentials = { username: username.trim(), password: password.trim() };
-      return true;
-    });
-
+    // Les identifiants sont configurés au niveau app (réglages de l'application).
+    // Le pairing utilise un client authentifié fourni par l'app.
     session.setHandler('list_devices', async () => {
-      if (!client) throw new Error('Authentification requise.');
+      let client;
+      try {
+        client = await this.homey.app.createAuthenticatedClient();
+      } catch (err) {
+        // Identifiants absents ou invalides → message clair pour l'utilisateur
+        throw new Error(err.message);
+      }
 
       const devices = await client.getDevices();
       if (devices.length === 0) {
@@ -31,12 +28,7 @@ class PoolControllerDriver extends Homey.Driver {
       return devices.map(d => ({
         name: d.name,
         data: { id: d.id },
-        store: {
-          username: credentials.username,
-          password: credentials.password,
-          model: d.model,
-          serial: d.serial,
-        },
+        store: { model: d.model, serial: d.serial },
       }));
     });
   }
